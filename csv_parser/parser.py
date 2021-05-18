@@ -2,23 +2,34 @@ import sys
 import csv
 
 class CSVParser:
+    def __init__(self):
+        self.jobs_file = "t_jobs.csv"
+        self.applicants_file = "t_files.csv"
 
-    def parse(file_name):
+        self.jobs_file_handler = None
+        self.applicants_file_handler = None
+
+    def parse(self, file_name):
+        self.jobs_file_handler = open(self.jobs_file, "w")
+        self.applicants_file_handler = open(self.applicants_file, "w")
+
         with open(file_name, newline='') as csvfile:
-            content = csv.reader(csvfile, delimiter=',', quotechar='"')
-            CSVParser.process_file(content)
+            lines = csv.reader(csvfile, delimiter=',', quotechar='"')
+            self.process_file(lines)
 
-    def process_file(content):
-        map_headers = CSVParser.__get_map_headers(content)
+        self.jobs_file_handler.close()
+        self.applicants_file_handler.close()
+
+    def process_file(self, lines):
+        map_headers = self.get_map_headers(lines)
     
-        for row in content:
-            job = CSVParser.get_job(row, map_headers)
-            aplicants = CSVParser.get_aplicants(row, map_headers)
-            print(job)
+        for idx, line in enumerate(lines):
+            self.write_job(idx, line, map_headers)
+            self.write_aplicants(idx, line, map_headers)
 
-    def __get_map_headers(content):
+    def get_map_headers(self, lines):
         try:
-            headers = content.__next__()
+            headers = lines.__next__()
         except StopIteration:
             # If the file is empty, return an empty hash
             return {}
@@ -31,18 +42,25 @@ class CSVParser:
             'applicants': headers.index('applicants')
         }
 
-    def get_job(row, map_headers):
-        return [
-            row[map_headers['job title']],
-            row[map_headers['job description']],
-            row[map_headers['location']],
-            row[map_headers['date']]
-        ]
+    def write_job(self, idx, line, map_headers):
+        self.jobs_file_handler.write("{},{},{},{},{}\n".format(
+            idx,
+            line[map_headers['job title']],
+            line[map_headers['job description']],
+            line[map_headers['location']],
+            line[map_headers['date']]
+        ))
 
-    def get_aplicants(row, map_headers):
-        # Split applicants by comma and trim (strip) spaces from each applicant
-        return [x.strip() for x in row[map_headers['applicants']].split(',')]
+    def write_aplicants(self, idx, line, map_headers):
+        applicants = [x.strip() for x in line[map_headers['applicants']].split(',')]
+
+        for applicant in applicants:
+            self.applicants_file_handler.write("{},{}\n".format(
+                idx, applicant
+            ))
 
 # TODO : Do argument validation and add a help menu
 file_name = sys.argv[1]
-CSVParser.parse(file_name)
+
+parser = CSVParser()
+parser.parse(file_name)
