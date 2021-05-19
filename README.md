@@ -20,12 +20,13 @@ These are manual steps for now:
 
 ```
 docker cp t_jobs.csv coding-challenge-db:/tmp
-docker cp t_files.csv coding-challenge-db:/tmp
+docker cp t_applicants.csv coding-challenge-db:/tmp
 ```
 
 ```
 mysql --host=localhost --user=root --password=your_mysql_root_password
 CREATE DATABASE jobs_board;
+USE JOBS_BOARD;
 
 create table jobs (title VARCHAR(100), description VARCHAR(200), location VARCHAR(100), date DATE);
 create table applicants (id INTEGER, applicant VARCHAR(100));
